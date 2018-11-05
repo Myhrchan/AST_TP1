@@ -2,7 +2,7 @@
 # Asynchronous Server Technologies TP1 by Mariane CHAMPALIER
 
 ## Introduction
-This website is a basic javascript site which say 'hello' when you enter your name in the url.
+This website is a basic javascript site working with Node.js, which say 'hello' when you enter your name in the url.
 
 ## Installation
 Run the `index.js` script on node.js (with the instruction `node index.js`), then connect to you localhost on port 8080 : `http://localhost:8080/`
