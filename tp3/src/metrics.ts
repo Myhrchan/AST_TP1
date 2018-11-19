@@ -25,7 +25,10 @@ export class MetricsHandler {
         stream.on('close', callback)
 
         metrics.forEach((m: Metric) => {
-            stream.write({ key: `metric:${key}:${m.timestamp}`, value: m.value })
+            if(m.timestamp instanceof  Date)
+                var time = m.timestamp.getTime()
+            else time = m.timestamp
+            stream.write({ key: `metric:${key}:${time}`, value: m.value })
         })
 
         stream.end()
@@ -58,7 +61,7 @@ export class MetricsHandler {
                 const [_, k, timestamp] = data.key.split(":")
                 const value = data.value
 
-                console.log("in db :", k, " ", timestamp, " ", value)
+                //console.log("in db :", k, " ", timestamp, " ", value)
 
                 if (key == k)
                     met.push(new Metric(parseInt(timestamp), value))
