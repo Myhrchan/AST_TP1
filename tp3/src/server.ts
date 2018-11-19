@@ -24,6 +24,15 @@ app.post('/metrics/:id', (req: any, res: any) => {
     })
 })
 
+app.delete('/metrics/:id', (req: any, res: any) => {
+    dbMetrics.delete(req.params.id, (err: Error | null) => {
+        if (err) {
+            res.status(500).send(err.message)
+        }
+        res.status(200).send("success")
+    })
+})
+
 app.get('/metrics/:id', (req: any, res: any) => {
     dbMetrics.get(req.params.id, (err: Error | null, result?: Metric[]) => {
         if (err) throw err

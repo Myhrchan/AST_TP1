@@ -24,11 +24,26 @@ export class MetricsHandler {
         stream.on('error', callback)
         stream.on('close', callback)
 
-        metrics.forEach((m:Metric) => {
+        metrics.forEach((m: Metric) => {
             stream.write({ key: `metric:${key}:${m.timestamp}`, value: m.value })
         })
 
         stream.end()
+    }
+
+    public delete(key: string, callback: (err: Error | null) => void) {
+
+        const stream = this.db.createReadStream()
+        var met: Metric[] = []
+
+        stream.on('error', callback)
+            .on('end', (err: Error) => {
+                callback(null)
+            })
+            .on('data', (data: any) => {
+                const [_, k, timestamp] = data.key.split(":")
+                if (k === key) this.db.del(data.key)
+            })
     }
 
     public get(key: string, callback: (error: Error | null, result?: Metric[]) => void) {
@@ -36,16 +51,16 @@ export class MetricsHandler {
         var met: Metric[] = []
 
         stream.on('error', callback)
-            .on('end', (err: Error)  => {
+            .on('end', (err: Error) => {
                 callback(null, met)
             })
             .on('data', (data: any) => {
                 const [_, k, timestamp] = data.key.split(":")
                 const value = data.value
-                
+
                 console.log("in db :", k, " ", timestamp, " ", value)
 
-                if(key == k)
+                if (key == k)
                     met.push(new Metric(parseInt(timestamp), value))
             })
     }
