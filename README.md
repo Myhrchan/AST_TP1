@@ -1,5 +1,7 @@
 
-# Asynchronous Server Technologies TP3 by Mariane CHAMPALIER
+# Asynchronous Server Technologies TP by Mariane CHAMPALIER
+
+![Build status](https://travis-ci.org/Myhrchan/AST_TP1.svg?branch=master)
 
 ## Introduction
 This website is a basic javascript site working with Node.js.
