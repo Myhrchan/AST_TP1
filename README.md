@@ -18,3 +18,10 @@ For POST request, add a json in the body of the request with the following shape
 [
   { "timestamp":your timestamp, "value":your value }
 ]
+
+
+/login
+/logout
+/signup
+/metrics/:id
+/user/:id

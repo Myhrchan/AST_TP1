@@ -4,12 +4,18 @@
   "description": "This website is a basic javascript site working with Node.js, which say 'hello' when you enter your name in the url.",
   "main": "servcer.ts",
   "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.18.3",
+    "del": "^3.0.0",
+    "ejs": "^2.6.1",
     "encoding-down": "^5.0.4",
     "express": "^4.16.4",
+    "express-session": "^1.15.6",
+    "level-session-store": "^2.1.0",
     "level-ws": "^1.0.0",
     "leveldown": "^4.0.1",
-    "levelup": "^3.1.1"
+    "levelup": "^3.1.1",
+    "morgan": "^1.9.1"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
