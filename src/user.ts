@@ -3,7 +3,7 @@ import WriteStream from 'level-ws'
 
 const bcrypt = require('bcrypt-nodejs')
 
-var salt = bcrypt.genSaltSync(10);
+var salt = bcrypt.genSaltSync(5);
 
 export class User {
     public username: string
@@ -11,6 +11,7 @@ export class User {
     private password: string = ""
 
     constructor(username: string, email: string, password: string, passwordHashed: boolean = false) {
+      console.log("CONSTRUCTOR")
       this.username = username
         this.email = email
 
@@ -22,9 +23,7 @@ export class User {
     static fromDb(username: string, value: any): User {
         // Parse db result and return a User
         const [password, email] = value.split(":")
-        //TODO : faire le hash
-        var hashed = bcrypt.hashSync(password, salt); 
-        return new User(username, email, hashed)
+        return new User(username, email, password, true)
     }
 
     public setPassword(toSet: string): void {
@@ -37,7 +36,9 @@ export class User {
     }
 
     public validatePassword(toValidate: String): boolean {
-        return bcrypt.compareSync(this.password, toValidate)
+      console.log(this.password)
+      console.log(bcrypt.compareSync(toValidate, this.password))
+      return bcrypt.compareSync(toValidate, this.password)
     }
 }
 
@@ -58,7 +59,6 @@ export class UserHandler {
     }
   
     public save(user: User, callback: (err: Error | null) => void) {
-      console.log(user)
       var password = user.getPassword()
       this.db.put(
         `user:${user.username}`,
