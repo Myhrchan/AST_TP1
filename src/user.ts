@@ -11,7 +11,6 @@ export class User {
     private password: string = ""
 
     constructor(username: string, email: string, password: string, passwordHashed: boolean = false) {
-      console.log("CONSTRUCTOR")
       this.username = username
         this.email = email
 
@@ -36,8 +35,6 @@ export class User {
     }
 
     public validatePassword(toValidate: String): boolean {
-      console.log(this.password)
-      console.log(bcrypt.compareSync(toValidate, this.password))
       return bcrypt.compareSync(toValidate, this.password)
     }
 }

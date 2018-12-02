@@ -12,16 +12,11 @@ It stores couples key-value in a local database with a timestamp.
 Run the `server.ts` script on node.js (with the instruction `node server.ts`, or `nps nodemon` if ou want it to automatically refresh on update), then connect to you localhost on port 8080 : `http://localhost:8080/`
 
 ## Usage
-You can do GET, POST or DELETE requests on the database.
-For GET and DELETE requests, connect to the url : `http://localhost:8080/metrics/yourKey` and replace yourKey with the key you want to register. 
-For POST request, add a json in the body of the request with the following shape:
-[
-  { "timestamp":your timestamp, "value":your value }
-]
+You need to create an account to use the database. For this, do a POST request at the url `http://localhost:8080/user` with the following information:
+  { "username":your username, "email":your email ,"password": your password }
+Or go on the address `http://localhost:8080/signup` in your browser and enter your information.
+You will then need to login.
 
-
-/login
-/logout
-/signup
-/metrics/:id
-/user/:id
+To access your metrics, go on the url : `http://localhost:8080`
+To see them click on "Bring the metrics". 
+To add a metric, click on "Add metrics".

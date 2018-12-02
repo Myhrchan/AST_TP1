@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include partial/head %>
+</head>
+
+<body class="container">
+    <div class="col-md-6.col-md-offset-3">
+        <div id="form">
+            <p>Create an account</p>
+            <form>
+                Username: <input type="text" name="username" id="username"><br>
+                Email: <input type="text" name="email" id="email"><br>
+                Password: <input type="password" name="password" id="password"><br>
+                <button class="btn btn-success" id="save-user">
+                        Create an account
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+
+<script>
+    $('#save-user').click((e) => {
+    e.preventDefault()
+    if( $('#username').val() == '' || $('#email').val() == '' || $('#password').val() == ''){
+      alert("Missing value")
+      return
+    }
+    $.post('/user',
+      {
+        username: $('#username').val(),
+        email: $('#email').val(),
+        password: $('#password').val()
+      }, () => {
+        $(location).attr('href', '/')
+      })
+  })
+</script>
+
+</html>

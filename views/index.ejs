@@ -13,22 +13,69 @@
     <button class="btn btn-success" id="show-metrics">
       Bring the metrics
     </button>
+    <button class="btn btn-success" id="add-metrics">
+      Add metrics
+    </button>
     <button class="btn btn-danger" href="/logout" onClick='document.location.href="/logout"'>
       Logout
     </button>
     <div id="metrics"></div>
+    <div id="form">
+      <form>
+        Key: <input type="text" name="key" id="key"><br>
+        Timestamp: <input type="text" name="timestamp" id="timestamp"><br>
+        Value: <input type="text" name="value" id="value"><br>
+        <button class="btn btn-success" id="save-metrics">
+          Save
+        </button>
+      </form>
+    </div>
   </div>
 </body>
 
 <script>
-  $('#show-metrics').click((e) => {
-    e.preventDefault()
-    $.getJSON('/metrics.json', {}, (data) => {
+  $(document).ready(function () {
+    $("#form").css("display", "none");
+  })
+
+  function getMetrics(){
+    $('#metrics').empty()
+    $.getJSON('/metrics/all', {}, (data) => {
       const content = data.map(d => {
-        return `<p>timestamp: ${d.timestamp}, value: ${d.value}</p>`
+        return `<p> timestamp: ${d.timestamp}, value: ${d.value}</p>`
       })
       $("#metrics").append(content.join("\n"))
     })
+  }
+
+  $('#show-metrics').click((e) => {
+    e.preventDefault()
+    getMetrics()
+  })
+
+  $('#add-metrics').click((e) => {
+    $("#form").css("display", "block");
+  })
+
+  $('#save-metrics').click((e) => {
+    e.preventDefault()
+    if( $('#key').val() == '' || $('#timestamp').val() == '' || $('#value').val() == ''){
+      alert("Missing value")
+      return
+    }
+    $.post('/metrics/add',
+      {
+        key: $('#key').val(),
+        timestamp: $('#timestamp').val(),
+        value: $('#value').val()
+      }, (data) => {
+        $('#key').val('')
+        $('#value').val('')
+        $('#timestamp').val('')
+      })
+
+    $("#form").css("display", "none");
+    getMetrics()
   })
 </script>
 
