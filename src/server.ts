@@ -4,6 +4,11 @@ import path = require('path')
 import morgan = require('morgan')
 import session = require('express-session')
 import levelSession = require('level-session-store')
+import dotenv = require('dotenv')
+
+dotenv.config()
+
+console.log('name: ', process.env.ENVNAME)
 
 const LevelStore = levelSession(session)
 

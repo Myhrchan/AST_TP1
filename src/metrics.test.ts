@@ -17,7 +17,7 @@ describe('Metrics', function () {
 
     describe('#get', function () {
         it('should get empty array on non existing group', function () {
-            dbMet.get("1", function (err: Error | null, result?: Metric[]) {
+            dbMet.getByUser("azertyui", function (err: Error | null, result?: Metric[]) {
                 expect(err).to.be.null
                 expect(result).to.not.be.undefined
                 expect(result).to.be.empty
@@ -30,7 +30,7 @@ describe('Metrics', function () {
         let metrics = [new Metric("1384686660000", 10)]
 
         it('should save data', function () {
-            dbMet.save("2", metrics, function (err: Error | null, result?: Metric[]) {
+            dbMet.save("2", "m", metrics, function (err: Error | null, result?: Metric[]) {
                 expect(err).to.be.undefined
                 expect(result).to.be.undefined
             })
@@ -39,7 +39,7 @@ describe('Metrics', function () {
         metrics = [new Metric("1384686660000", 12)]
 
         it('should update data', function () {
-            dbMet.save("2", metrics, function (err: Error | null, result?: Metric[]) {
+            dbMet.save("2", "m", metrics, function (err: Error | null, result?: Metric[]) {
                 expect(err).to.be.undefined
                 expect(result).to.be.undefined
             })
