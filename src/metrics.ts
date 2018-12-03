@@ -1,4 +1,3 @@
-import { LevelDb } from "./leveldb";
 import WriteStream from 'level-ws'
 
 export class Metric {
@@ -14,8 +13,8 @@ export class Metric {
 export class MetricsHandler {
   public db: any
 
-  constructor(path: string) {
-    if (this.db == null) this.db = LevelDb.open(path)
+  constructor(openDb: any) {
+    if (this.db == null) this.db = openDb
   }
 
   public save(key: string, user: string, met: Metric[], callback: (err: Error | null) => void) {
@@ -30,8 +29,8 @@ export class MetricsHandler {
 
     stream.end()
   }
-/*
-  public get(key: string, callback: (err: Error | null, result?: Metric[]) => void) {
+
+  public get(key: string, user: string, callback: (err: Error | null, result?: Metric[]) => void) {
     const stream = this.db.createReadStream()
     var met: Metric[] = []
 
@@ -40,42 +39,50 @@ export class MetricsHandler {
         callback(null, met)
       })
       .on('data', (data: any) => {
-        const [_, username, k, timestamp] = data.key.split(":")
-        const value = data.value
+        const [type, username, k, timestamp] = data.key.split(":")
+        console.log(type)
+        if(type == "metrics"){
+          const value = data.value
 
-        //  console.log("in db :", username, k, " ", timestamp, " ", value)
+          //  console.log("in db :", username, k, " ", timestamp, " ", value)
 
-        if (key != k) {
-          console.log(`LOG/ LevelDB error: ${data} does not match key ${key}`)
-        } else {
-          met.push(new Metric(timestamp, value))
+          if (username != user && k != key) {
+          //  console.log(`LOG/ LevelDB error: ${username} does not match key ${user}`)
+          } else {
+            met.push(new Metric(timestamp, value))
+          }
         }
       })
   }
-*/
+
   public getByUser(user: string, callback: (err: Error | null, result?: Metric[]) => void) {
     const stream = this.db.createReadStream()
-    var met: Metric[] = []
+    var met: any[] = []
 
     stream.on('error', callback)
       .on('end', (err: Error) => {
         callback(null, met)
       })
       .on('data', (data: any) => {
-        const [_, username, k, timestamp] = data.key.split(":")
-        const value = data.value
+        const [type, username, k, timestamp] = data.key.split(":")
+        if(type == "metrics"){
+          const value = data.value
 
-        //  console.log("in db :", username, k, " ", timestamp, " ", value)
+          //  console.log("in db :", username, k, " ", timestamp, " ", value)
 
-        if (username != user) {
-          console.log(`LOG/ LevelDB error: ${username} does not match key ${user}`)
-        } else {
-          met.push(new Metric(timestamp, value))
+          if (username != user) {
+         //   console.log(`LOG/ LevelDB error: ${username} does not match key ${user}`)
+          } else {
+            var tmp: any[] = []
+            tmp.push(k)
+            tmp.push(new Metric(timestamp, value))
+            met.push(tmp)
+          }
         }
       })
   }
 
-  public delete(key: string, callback: (err: Error | null) => void) {
+  public delete(key: string, user: string, callback: (err: Error | null) => void) {
 
     const stream = this.db.createReadStream()
     //var met: Metric[] = []
@@ -86,7 +93,7 @@ export class MetricsHandler {
       })
       .on('data', (data: any) => {
         const [_, username, k, timestamp] = data.key.split(":")
-        if (k === key) this.db.del(data.key)
+        if (k === key && username == user) this.db.del(data.key)
       })
   }
 }

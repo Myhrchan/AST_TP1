@@ -42,7 +42,7 @@
     $('#metrics').empty()
     $.getJSON('/metrics/all', {}, (data) => {
       const content = data.map(d => {
-        return `<p> timestamp: ${d.timestamp}, value: ${d.value}</p>`
+        return `<p> key: ${d[0]}, timestamp: ${d[1].timestamp}, value: ${d[1].value}</p>`
       })
       $("#metrics").append(content.join("\n"))
     })
@@ -54,7 +54,14 @@
   })
 
   $('#add-metrics').click((e) => {
-    $("#form").css("display", "block");
+    if( $("#form").css("display") == "block"){
+      $("#form").css("display", "none");
+      $('#add-metrics').html('Add metric');
+    }
+    else{
+      $("#form").css("display", "block");
+      $('#add-metrics').html('Hide form');
+    }
   })
 
   $('#save-metrics').click((e) => {

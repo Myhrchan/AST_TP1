@@ -8,19 +8,21 @@ import dotenv = require('dotenv')
 
 dotenv.config()
 
-console.log('name: ', process.env.ENVNAME)
+//console.log('name: ', process.env.ENVNAME)
 
 const LevelStore = levelSession(session)
 
 import { MetricsHandler, Metric } from './metrics'
 import { UserHandler, User } from './user'
 import { callbackify } from 'util';
+import { LevelDb } from "./leveldb";
 
 const app = express()
 const port: string = process.env.PORT || '8080'
 
-const dbMet: MetricsHandler = new MetricsHandler('./db/metrics')
-const dbUser: UserHandler = new UserHandler('./db/users')
+const db = LevelDb.open('./db/all')
+const dbMet: MetricsHandler = new MetricsHandler(db)
+const dbUser: UserHandler = new UserHandler(db)
 
 app.use(bodyparser.json())
 app.use(bodyparser.urlencoded())
@@ -52,7 +54,7 @@ authRouter.get('/login', function (req: any, res: any) {
 
 authRouter.post('/login', function (req: any, res: any, next: any) {
   dbUser.get(req.body.username, function (err: Error | null, result?: User) {
-    if (err) next(err)
+   // if (err) next(err)
     if (result === undefined || !result.validatePassword(req.body.password)) {
       res.redirect('/login')
     } else {
@@ -81,7 +83,7 @@ app.use(authRouter)
 const authMiddleware = function (req: any, res: any, next: any) {
   if (req.session.loggedIn) {
     next()
- } else res.redirect('/login')
+  } else res.redirect('/login')
 }
 
 /*
@@ -136,7 +138,7 @@ app.use('/user', userRouter)
 
 const metricsRouter = express.Router()
 metricsRouter.use(function (req: any, res: any, next: any) {
-  console.log("called metrics router")
+  console.log("metrics router")
   next()
 })
 
@@ -154,15 +156,15 @@ metricsRouter.post('/add', (req: any, res: any, next: any) => {
   var met: Metric[] = []
   met.push(new Metric(req.body.timestamp, req.body.value))
 
-  dbMet.save(req.body.key, req.session.user.username, met, (err: Error | null) => {
-    if (err) next(err)
-    res.status(200).send()
-  })
+    dbMet.save(req.body.key, req.session.user.username, met, (err: Error | null) => {
+      if (err) next(err)
+      res.status(200).send()
+    })
 })
 
-/*
+
 metricsRouter.get('/:id', (req: any, res: any, next: any) => {
-  dbMet.get(req.params.id, (err: Error | null, result?: Metric[]) => {
+  dbMet.get(req.params.id, req.session.user.username, (err: Error | null, result?: Metric[]) => {
     if (err) next(err)
     if (result === undefined) {
       res.write('no result')
@@ -170,7 +172,7 @@ metricsRouter.get('/:id', (req: any, res: any, next: any) => {
     } else res.json(result)
   })
 })
-*/
+
 metricsRouter.post('/:id', (req: any, res: any, next: any) => {
   dbMet.save(req.params.id, req.session.user.username, req.body, (err: Error | null) => {
     if (err) next(err)
@@ -179,7 +181,7 @@ metricsRouter.post('/:id', (req: any, res: any, next: any) => {
 })
 
 metricsRouter.delete('/:id', (req: any, res: any, next: any) => {
-  dbMet.delete(req.params.id, (err: Error | null) => {
+  dbMet.delete(req.params.id, req.session.user.username, (err: Error | null) => {
     if (err) next(err)
     res.status(200).send()
   })
@@ -192,7 +194,6 @@ app.use('/metrics', authMiddleware, metricsRouter)
 */
 
 app.use(function (err: Error, req: any, res: any, next: any) {
-  console.log('got an error')
   console.error(err.stack)
   res.status(500).send('Something broke!')
 })

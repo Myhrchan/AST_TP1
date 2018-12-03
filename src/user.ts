@@ -42,15 +42,15 @@ export class User {
 export class UserHandler {
     public db: any
   
-    constructor(path: string) {
-      this.db = LevelDb.open(path)
+    constructor(openDb: any) {
+      if (this.db == null) this.db = openDb
     }
   
     public get(username: string, callback: (err: Error | null, result?: User) => void) {
       
       this.db.get(`user:${username}`, function (err: Error, data: any) {
-        if (err) callback(err)
-        else if (data === undefined) callback(null, data)
+        if (err) callback(null)
+       // else if (data === undefined) callback(null, data)
         else callback(null, User.fromDb(username, data))
       })
     }

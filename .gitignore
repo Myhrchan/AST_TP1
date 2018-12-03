@@ -78,3 +78,5 @@ typings/
 db/*
 
 db_test
+
+*.env
