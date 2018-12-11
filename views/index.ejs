@@ -43,10 +43,12 @@
     $('#metrics').empty()
     $.getJSON('/metrics/all', {}, (data) => {
       const content = data.map(d => {
-        return `<p id="${d[0]}">
+        return `<p id="metric-${d[0]}">
           <button class="btn btn-danger" id="delete-metrics-${d[0]}">Delete</button>
           <button class="btn btn-success" id="update-metrics-${d[0]}">Update</button>
-          key: ${d[0]}, timestamp: ${d[1].timestamp}, value: ${d[1].value}</p>`
+          key: <b class="key">${d[0]}</b>, 
+          timestamp: <b class="timestamp">${d[1].timestamp}</b>, 
+          value: <b class="value">${d[1].value}</b></p>`
       })
       $("#metrics").append(content.join("\n"))
     })
@@ -63,15 +65,38 @@
       url: '/metrics/'+ key,
       type: 'DELETE',
       success: () => {
-        getMetrics()
+        $("#metric-"+key).remove()
       }
     });
   })
 
+  $('#metrics').on('click', 'button[id^="update-metrics"]', (e) => {
+    key = e.target.id.split('-')[2]
+
+    if ($("#form").css("display") == "none") {
+      $("#form").css("display", "block");
+      $('#add-metrics').html('Hide form');
+    }
+    
+    $("#key").val(key)
+    $("#timestamp").val($('#metric-'+key +' .timestamp').text())
+    $("#value").val($('#metric-'+key +' .value').text())
+
+    $("#key").prop('disabled', true);
+    $("#timestamp").prop('disabled', true);
+  })
+
   $('#add-metrics').click((e) => {
+
+    $("#key").prop('disabled', false);
+    $("#timestamp").prop('disabled', false);
+
     if ($("#form").css("display") == "block") {
       $("#form").css("display", "none");
       $('#add-metrics').html('Add metric');
+      $("#key").val("")
+      $("#timestamp").val("")
+      $("#value").val("")
     }
     else {
       $("#form").css("display", "block");
@@ -85,6 +110,8 @@
       alert("Missing value")
       return
     }
+
+
     $.post('/metrics/add',
       {
         key: $('#key').val(),
