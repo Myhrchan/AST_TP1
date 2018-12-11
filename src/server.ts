@@ -54,7 +54,7 @@ authRouter.get('/login', function (req: any, res: any) {
 
 authRouter.post('/login', function (req: any, res: any, next: any) {
   dbUser.get(req.body.username, function (err: Error | null, result?: User) {
-   // if (err) next(err)
+    // if (err) next(err)
     if (result === undefined || !result.validatePassword(req.body.password)) {
       res.redirect('/login')
     } else {
@@ -156,10 +156,10 @@ metricsRouter.post('/add', (req: any, res: any, next: any) => {
   var met: Metric[] = []
   met.push(new Metric(req.body.timestamp, req.body.value))
 
-    dbMet.save(req.body.key, req.session.user.username, met, (err: Error | null) => {
-      if (err) next(err)
-      res.status(200).send()
-    })
+  dbMet.save(req.body.key, req.session.user.username, met, (err: Error | null) => {
+    if (err) next(err)
+    res.status(200).send()
+  })
 })
 
 
