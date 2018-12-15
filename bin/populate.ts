@@ -6,13 +6,13 @@ import {LevelDb} from "../src/leveldb";
 
 
 const met = [
-    new Metric('1544712724', 12),
-    new Metric('1544880816000', 10),
+    new Metric('1544900110509', 12),
+    new Metric('1544899142448', 10),
     new Metric('1544880752156', 8)
 ]
 
 const met2 = [
-    new Metric('1544712724', 15),
+    new Metric('1544899294181', 15),
     new Metric('1544880752156', 16),
     new Metric('1544880816000', 17)
 ]

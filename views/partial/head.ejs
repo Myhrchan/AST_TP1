@@ -3,7 +3,25 @@
 
 <link rel="stylesheet" href="/css/bootstrap.min.css">
 <style>
-    body    { padding-top:50px; }
+    body {
+        padding-top: 50px;
+    }
+
+    .line {
+        fill: none;
+        stroke: steelblue;
+        stroke-width: 2px;
+    }
+
+    .grid line {
+        stroke: lightgrey;
+        stroke-opacity: 0.7;
+        shape-rendering: crispEdges;
+    }
+
+    .grid path {
+        stroke-width: 0;
+    }
 </style>
 
 <script src="https://code.jquery.com/jquery-1.9.0.js"></script>
