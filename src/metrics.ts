@@ -40,7 +40,6 @@ export class MetricsHandler {
       })
       .on('data', (data: any) => {
         const [type, username, k, timestamp] = data.key.split(":")
-        console.log(type)
         if(type == "metrics"){
           const value = data.value
 
@@ -82,7 +81,7 @@ export class MetricsHandler {
       })
   }
 
-  public delete(key: string, user: string, callback: (err: Error | null) => void) {
+  public delete(key: string, time: string, user: string, callback: (err: Error | null) => void) {
 
     const stream = this.db.createReadStream()
     //var met: Metric[] = []
@@ -93,7 +92,12 @@ export class MetricsHandler {
       })
       .on('data', (data: any) => {
         const [_, username, k, timestamp] = data.key.split(":")
-        if (k === key && username == user) this.db.del(data.key)
+        if(time == ""){
+          if (k === key && username == user) this.db.del(data.key)
+        }
+        else{
+          if (k === key && username == user && timestamp == time) this.db.del(data.key)
+        }
       })
   }
 }

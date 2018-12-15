@@ -154,7 +154,12 @@ metricsRouter.get('/all', (req: any, res: any, next: any) => {
 
 metricsRouter.post('/add', (req: any, res: any, next: any) => {
   var met: Metric[] = []
-  met.push(new Metric(req.body.timestamp, req.body.value))
+  var time = Date.now();
+
+  if(req.body.timestamp == "" || req.body.timestamp == undefined)
+    met.push(new Metric(time.toString(), Number(req.body.value)))
+  else
+    met.push(new Metric(req.body.timestamp, Number(req.body.value)))
 
   dbMet.save(req.body.key, req.session.user.username, met, (err: Error | null) => {
     if (err) next(err)
@@ -181,7 +186,9 @@ metricsRouter.post('/:id', (req: any, res: any, next: any) => {
 })
 
 metricsRouter.delete('/:id', (req: any, res: any, next: any) => {
-  dbMet.delete(req.params.id, req.session.user.username, (err: Error | null) => {
+  var time = "";
+  if(req.body.timestamp !== undefined) time = req.body.timestamp;
+  dbMet.delete(req.params.id, time, req.session.user.username, (err: Error | null) => {
     if (err) next(err)
     res.status(200).send()
   })

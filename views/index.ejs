@@ -23,33 +23,19 @@
     <div id="form">
       <form>
         Key: <input type="text" name="key" id="key"><br>
-        Timestamp: <input type="text" name="timestamp" id="timestamp"><br>
         Value: <input type="text" name="value" id="value"><br>
         <button class="btn btn-success" id="save-metrics">
           Save
         </button>
       </form>
     </div>
-    <svg width="600" height="500"></svg>
-    <p> Order graph by:
-      <button class="btn btn-success" id="button-key">
-        Key
-      </button><button class="btn btn-success" id="button-timestamp">
-        Timestamp
-      </button>
-      <button class="btn btn-success" id="button-value">
-        Value
-      </button>
-    </p>
+    <svg></svg>
   </div>
 </body>
 
 <script>
 
-  var key = [];
-  var timestamp = [];
-  var value = [];
-  var dataForGraph = null;
+  var tmpTimestamp; 
 
   $(document).ready(function () {
     $("#form").css("display", "none");
@@ -59,32 +45,18 @@
     $('#metrics').empty()
     //print metrics 
     $.getJSON('/metrics/all', {}, (data) => {
-      const content = data.map(d => {
-        return `<p id="metric-${d[0]}">
-          <button class="btn btn-danger" id="delete-metrics-${d[0]}">Delete</button>
-          <button class="btn btn-success" id="update-metrics-${d[0]}">Update</button>
+      const content = data.map((d, index) => {
+        return `<p id="metric-${index}">
+          <button class="btn btn-danger" id="delete-metrics-${index}">Delete</button>
+          <button class="btn btn-success" id="update-metrics-${index}">Update</button>
           key: <b class="key">${d[0]}</b>, 
-          timestamp: <b class="timestamp">${d[1].timestamp}</b>, 
-          value: <b class="value">${d[1].value}</b></p>`
+          value: <b class="value">${d[1].value}</b>
+          <a id="timestamp-${index}">${d[1].timestamp}</a></p>`
       })
       $("#metrics").append(content.join("\n"))
 
-      //update general variables for graphs
-      key = [];
-      timestamp = [];
-      value = [];
-      $('.key').each(function( index ) {
-        key.push($( this ).text());
-      });
-      $('.timestamp').each(function( index ) {
-        timestamp.push($( this ).text());
-      });
-      $('.value').each(function( index ) {
-        value.push($( this ).text());
-      });
-
       drawGraph();
-    })    
+    })
   }
 
   $('#show-metrics').click((e) => {
@@ -93,42 +65,45 @@
   })
 
   $('#metrics').on('click', 'button[id^="delete-metrics"]', (e) => {
-    key = e.target.id.split('-')[2]
+    var index = e.target.id.split('-')[2];
+    var key = $("#metric-" + index).find(".key").text();
+
     $.ajax({
-      url: '/metrics/'+ key,
+      url: '/metrics/' + key,
+      data: { timestamp: $('#timestamp-' + index).text() },
       type: 'DELETE',
       success: () => {
-        $("#metric-"+key).remove()
+        $("#metric-" + index).remove()
       }
     });
   })
 
   $('#metrics').on('click', 'button[id^="update-metrics"]', (e) => {
-    key = e.target.id.split('-')[2]
+    var index = e.target.id.split('-')[2]
+    var key = $("#" + e.target.parentNode.id).find(".key").text();
+    tmpTimestamp = $("#" + e.target.parentNode.id).find("#timestamp-"+index).text();
 
     if ($("#form").css("display") == "none") {
       $("#form").css("display", "block");
       $('#add-metrics').html('Hide form');
     }
-    
+
     $("#key").val(key)
-    $("#timestamp").val($('#metric-'+key +' .timestamp').text())
-    $("#value").val($('#metric-'+key +' .value').text())
+    $("#value").val($('#metric-' + index + ' .value').text())
 
     $("#key").prop('disabled', true);
-    $("#timestamp").prop('disabled', true);
   })
 
   $('#add-metrics').click((e) => {
 
+    tmpTimestamp = undefined;
+
     $("#key").prop('disabled', false);
-    $("#timestamp").prop('disabled', false);
 
     if ($("#form").css("display") == "block") {
       $("#form").css("display", "none");
       $('#add-metrics').html('Add metric');
       $("#key").val("")
-      $("#timestamp").val("")
       $("#value").val("")
     }
     else {
@@ -144,112 +119,176 @@
       return
     }
 
+    if (!$.isNumeric($('#value').val())) {
+      alert("Please enter a number in value")
+      return
+    }
+
     $.post('/metrics/add',
       {
         key: $('#key').val(),
-        timestamp: $('#timestamp').val(),
-        value: $('#value').val()
+        value: $('#value').val(),
+        timestamp: tmpTimestamp
       }, (data) => {
         $('#key').val('')
         $('#value').val('')
-        $('#timestamp').val('')
       })
+    
+    tmpTimestamp = undefined;
 
     $("#form").css("display", "none");
     $('#add-metrics').html('Add metric');
     getMetrics()
   })
 
-  $('#button-key').click((e) => {
-    dataForGraph = "key";
-    drawGraph();
-  });
+  var date_sort_asc = function (e1, e2) {
+    // This is a comparison function that will result in dates being sorted in
+    // ASCENDING order.
+    if (e1[0] > e2[0]) return 1;
+    if (e1[0] < e2[0]) return -1;
+    return 0;
+  };
 
-  $('#button-timestamp').click((e) => {
-    dataForGraph = "timestamp";
-    drawGraph();
-  });
+  function drawGraph() {
 
-  $('#button-value').click((e) => {
-    dataForGraph = "value";
-    drawGraph();
-  });
+    $.getJSON('/metrics/all', {}, (data) => {
+      const content = data.map(d => {
+        return [new Date(d[1].timestamp * 1000), d[1].value];
+      })
 
-  function computeData(arr){
-    var a = [], b = [], prev;
+      content.sort(date_sort_asc);
+      console.log(content);
 
-    arr.sort();
-    for ( var i = 0; i < arr.length; i++ ) {
-        if ( arr[i] !== prev ) {
-            a.push(arr[i]);
-            b.push(1);
-        } else {
-            b[b.length-1]++;
-        }
-        prev = arr[i];
-    }
+      d3.select("svg").selectAll("*").remove();
 
-    return [a, b];
+      // set the dimensions and margins of the graph
+      var margin = { top: 20, right: 20, bottom: 30, left: 50 },
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
+
+      // parse the date / time
+      var parseTime = d3.timeParse("%d-%b-%y");
+
+      // set the ranges
+      var x = d3.scaleTime().range([0, width]);
+      var y = d3.scaleLinear().range([height, 0]);
+
+      // define the line
+      var valueline = d3.line()
+        .x(function (d) { return x(d[0]); })
+        .y(function (d) { return y(d[1]); });
+
+      // append the svg obgect to the body of the page
+      // appends a 'group' element to 'svg'
+      // moves the 'group' element to the top left margin
+      var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+      // gridlines in x axis function
+      function make_x_gridlines() {
+        return d3.axisBottom(x)
+          .ticks(5)
+      }
+
+      // gridlines in y axis function
+      function make_y_gridlines() {
+        return d3.axisLeft(y)
+          .ticks(5)
+      }
+
+      // format the data
+      /*  data.forEach(function(d) {
+            d.date = parseTime(d.date);
+            d.close = +d.close;
+        });*/
+
+      // Scale the range of the data
+      x.domain(d3.extent(content, function (d) { return d[0]; }));
+      y.domain([0, d3.max(content.map(function (d) { return d[1]; }))]);
+
+      // add the X gridlines
+      svg.append("g")
+        .attr("class", "grid")
+        .attr("transform", "translate(0," + height + ")")
+        .call(make_x_gridlines()
+          .tickSize(-height)
+          .tickFormat("")
+        )
+
+      // add the Y gridlines
+      svg.append("g")
+        .attr("class", "grid")
+        .call(make_y_gridlines()
+          .tickSize(-width)
+          .tickFormat("")
+        )
+
+      // add the valueline path.
+      svg.append("path")
+        .data([data])
+        .attr("class", "line")
+        .attr("d", valueline);
+
+      // add the X Axis
+      svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+      // add the Y Axis
+      svg.append("g")
+        .call(d3.axisLeft(y));
+
+
+      /*
+      var svg = d3.select("svg"),
+          margin = 200,
+          width = svg.attr("width") - margin,
+          height = svg.attr("height") - margin;
+
+      var xScale = d3.scaleBand().range ([0, width]).padding(0.4),
+          yScale = d3.scaleLinear().range ([height, 0]);
+
+      var g = svg.append("g")
+                .attr("transform", "translate(" + 100 + "," + 100 + ")");
+
+      xScale.domain(data.map(function(d) { return d[0]; }));
+      yScale.domain([0, d3.max(dataset)]);
+
+      g.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(xScale));
+
+      g.append("g")
+      .call(d3.axisLeft(yScale).tickFormat(function(d){
+          return d;
+      }).ticks(10))
+
+      g.selectAll(".bar")
+          .data(data)
+          .enter().append("rect")
+          .attr("class", "bar")
+          .attr("x", function(d) { return xScale(d[0]); })
+          .attr("y", function(d) { return yScale(d[1]); })
+          .attr("width", xScale.bandwidth())
+          .attr("height", function(d) { return height - yScale(d[1]); });
+
+      svg.append("text")
+          .attr("transform", "translate(100,0)")
+          .attr("x", 50)
+          .attr("y", 50)
+          .attr("font-size", "24px")
+          .text("Number of metrics by "+dataForGraph)
+      */
+    });
   }
 
-  function drawGraph(){
 
-    var tmp;
 
-    if(dataForGraph == "timestamp") tmp = timestamp;
-    else if(dataForGraph == "key") tmp = key;
-    else{
-      tmp = value;
-      dataForGraph = "value";
-    } 
 
-    var label, dataset;
-    [label, dataset] = computeData(tmp);
-
-    data = dataset.map(function(d, index) { return [label[index], d]; });
-
-    d3.select("svg").selectAll("*").remove();
-
-    var svg = d3.select("svg"),
-        margin = 200,
-        width = svg.attr("width") - margin,
-        height = svg.attr("height") - margin;
-
-    var xScale = d3.scaleBand().range ([0, width]).padding(0.4),
-        yScale = d3.scaleLinear().range ([height, 0]);
-
-    var g = svg.append("g")
-               .attr("transform", "translate(" + 100 + "," + 100 + ")");
-
-    xScale.domain(data.map(function(d) { return d[0]; }));
-    yScale.domain([0, d3.max(dataset)]);
-
-    g.append("g")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(xScale));
-
-    g.append("g")
-    .call(d3.axisLeft(yScale).tickFormat(function(d){
-        return d;
-    }).ticks(10))
-    
-    g.selectAll(".bar")
-         .data(data)
-         .enter().append("rect")
-         .attr("class", "bar")
-         .attr("x", function(d) { return xScale(d[0]); })
-         .attr("y", function(d) { return yScale(d[1]); })
-         .attr("width", xScale.bandwidth())
-         .attr("height", function(d) { return height - yScale(d[1]); });
-
-    svg.append("text")
-        .attr("transform", "translate(100,0)")
-        .attr("x", 50)
-        .attr("y", 50)
-        .attr("font-size", "24px")
-        .text("Number of metrics by "+dataForGraph)
-  }
-       
 </script>
 
 </html>
