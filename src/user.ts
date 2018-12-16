@@ -49,8 +49,7 @@ export class UserHandler {
     public get(username: string, callback: (err: Error | null, result?: User) => void) {
       
       this.db.get(`user:${username}`, function (err: Error, data: any) {
-        if (err) callback(null)
-       // else if (data === undefined) callback(null, data)
+        if (err) callback(err)
         else callback(null, User.fromDb(username, data))
       })
     }
@@ -69,7 +68,7 @@ export class UserHandler {
     public delete(username: string, callback: (err: Error | null) => void) {
       this.db.del(`user:${username}`, function (err: Error, data: any) {
         if (err) callback(err)
-        else callback(null)
+        else callback(data)
       })
   }
 }

@@ -8,7 +8,8 @@ var dbUser: UserHandler
 describe('Users', function () {
   before(function () {
     LevelDb.clear(dbPath)
-    dbUser = new UserHandler(dbPath)
+    const db = LevelDb.open(dbPath)
+    dbUser = new UserHandler(db)
   })
 
   after(function () {
@@ -20,7 +21,7 @@ describe('Users', function () {
       dbUser.get("ouyfqeouysf", function (err: Error | null, result?: User | undefined) {
         expect(err).to.have.property('notFound', true)
         expect(result).to.be.undefined
-      })  
+      })
     })
   })
 
@@ -33,7 +34,7 @@ describe('Users', function () {
         expect(result).to.be.undefined
       })
     })
-/*
+
     user = new User("test", "test2@gmail.com", "test")
 
     it('should update a User', function () {
@@ -41,25 +42,24 @@ describe('Users', function () {
         expect(err).to.be.undefined
         expect(result).to.be.undefined
       })
-    })*/
+    })
   })
 
   describe('#delete', function () {
     it('should delete a User', function () {
       this.timeout(5000)
-      setTimeout(function(){
-          dbUser.delete("haha", function (err: Error | null, result?: User[]) {
-              expect(err).to.be.empty
-              expect(result).to.be.undefined
-          })
-      }, 5000)   
+      setTimeout(function () {
+        dbUser.delete("haha", function (err: Error | null, result?: User[]) {
+          expect(err).to.be.empty
+          expect(result).to.be.undefined
+        })
+      }, 5000)
     })
-/*
+
     it('should not fail if User does not exist', function () {
       dbUser.delete("ouyfqeouysf", function (err: Error | null, result?: User[]) {
-        expect(err).to.have.property('notFound', true)
         expect(result).to.be.undefined
       })
-    })*/
+    })
   })
 })

@@ -12,8 +12,8 @@ const met = [
 ]
 
 const met2 = [
-    new Metric('1544899294181', 15),
-    new Metric('1544880752156', 16),
+    new Metric('1544899294181', 8),
+    new Metric('1544880752156', 10),
     new Metric('1544880816000', 17)
 ]
 
