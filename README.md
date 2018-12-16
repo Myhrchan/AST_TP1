@@ -1,5 +1,5 @@
 
-# Asynchronous Server Technologies TP by Mariane CHAMPALIER
+# Asynchronous Server Technologies Project by Mariane CHAMPALIER
 
 ![Build status](https://travis-ci.org/Myhrchan/AST_TP1.svg?branch=master)
 
@@ -10,7 +10,7 @@ It then prints the values in a graph according to the date.
 
 
 ## Installation
-Run the `server.ts` script on node.js (with the instruction `node server.ts`, or `nps nodemon` if ou want it to automatically refresh on update), then connect to you localhost on port 8080 : `http://localhost:8080/`
+Run the `server.ts` script on node.js (with the instruction `node server.ts`, or `npx nodemon` if ou want it to automatically refresh on update), then connect to you localhost on port 8080 : `http://localhost:8080/`
 
 ## Usage
 To create the database, run the command `npm run populate`.
