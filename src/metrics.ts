@@ -43,8 +43,6 @@ export class MetricsHandler {
         if(type == "metrics"){
           const value = data.value
 
-          //  console.log("in db :", username, k, " ", timestamp, " ", value)
-
           if (username != user && k != key) {
           //  console.log(`LOG/ LevelDB error: ${username} does not match key ${user}`)
           } else {
